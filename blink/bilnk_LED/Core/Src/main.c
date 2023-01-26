@@ -51,7 +51,30 @@ struct _GPIOstate{
 };
 struct _GPIOstate Button1;
 
+struct PortPin{
+	GPIO_TypeDef* PORT;
+	uint16_t PIN;
+};
 
+struct PortPin R[4] = {
+
+	{GPIOA,GPIO_PIN_10},
+	{GPIOB,GPIO_PIN_3},
+	{GPIOB,GPIO_PIN_5},
+	{GPIOB,GPIO_PIN_4}
+
+};
+
+struct PortPin L[4] = {
+
+	{GPIOA,GPIO_PIN_9},
+	{GPIOB,GPIO_PIN_7},
+	{GPIOC,GPIO_PIN_6},
+	{GPIOA,GPIO_PIN_7}
+
+};
+
+uint16_t ButtonMatrix = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,16 +132,18 @@ int main(void)
 	  // Read pin PC13 and save it to Button1
 //	  GPIO_PinState Button1;
 
-	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10);
-
-	  static uint32_t timestamp = 0;
-	  if(HAL_GetTick() >= timestamp){
-		  if(Button1.Last == 0 && Button1.Current == 1){
-			  timestamp = HAL_GetTick() + 50;
-			  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
-		  }
-	  }
-	  Button1.Last = Button1.Current;
+//	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10);
+//
+//	  static uint32_t timestamp = 0;
+//	  if(HAL_GetTick() >= timestamp){
+//		  if(Button1.Last == 0 && Button1.Current == 1){
+//			  timestamp = HAL_GetTick() + 50;
+//			  Button1.state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12);
+//			  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
+//
+//		  }
+//	  }
+//	  Button1.Last = Button1.Current;
   }
   /* USER CODE END 3 */
 }
@@ -218,10 +243,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_10, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -229,30 +257,67 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /*Configure GPIO pins : LD2_Pin PA10 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  /*Configure GPIO pins : PA7 PA9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC7 PC10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC12 */
   GPIO_InitStruct.Pin = GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PB3 PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
+void ReadMatrixButton_1Row(){
 
+	static uint8_t X = 0;
+	register int i;
+	for (i = 0;i<4;i++){
+		if(HAL_GPIO_ReadPin(L[i].PORT, L[i].PIN) == 1){
+
+			ButtonMatrix &= ~(1<<X+4+i);
+		}
+		else{
+			ButtonMatrix = 1 <<(X+4+i);
+		}
+	}
+	HAL_GPIO_WritePin(R[X].PORT, R[X].PIN, 1);
+	HAL_GPIO_WritePin(R[(X+1)%4].PORT, R[X].PIN, 1);
+	X++;
+	X%=4;
+
+}
 /* USER CODE END 4 */
 
 /**
