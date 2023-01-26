@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,9 +73,7 @@ struct PortPin L[4] = {
 	{GPIOA,GPIO_PIN_7}
 
 };
-
-
-
+int num = 0;
 
 uint16_t ButtonMatrix = 0;
 /* USER CODE END PV */
@@ -100,7 +98,7 @@ void ReadMatrixButton_1Row();
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	char Txbuffer[20];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -127,14 +125,20 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//	  uint8_t Test[] = "Hello World !!!\r\n"; //Data to send
+
 	  // Read pin PC13 and save it to Button1
 //	  GPIO_PinState Button1;
-
+	  num = num + 1;
+	  sprintf(Txbuffer, "%d\r\n", /*num*/);
+	  HAL_UART_Transmit(&huart2,(uint8_t *) Txbuffer,strlen(Txbuffer),HAL_MAX_DELAY);// Sending in normal mode
 //	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10);
 //
 //	  static uint32_t timestamp = 0;
@@ -143,12 +147,14 @@ int main(void)
 //			  timestamp = HAL_GetTick() + 50;
 //			  Button1.state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12);
 //			  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
-	  static uint32_t timestamp = 0;
-	  if(HAL_GetTick() >= timestamp){
-		  timestamp = HAL_GetTick() + 100;
-		  ReadMatrixButton_1Row();
-
-	  }
+//	  static uint32_t timestamp = 0;
+//	  if(HAL_GetTick() >= timestamp){
+//		  timestamp = HAL_GetTick() + 100;
+//		  ReadMatrixButton_1Row();
+//
+//	  }
+//	  HAL_UART_Transmit(huart, pData, Size, Timeout)
+//	  xy = xy + 1;
 //		  }
 //	  }
 //	  Button1.Last = Button1.Current;
@@ -272,8 +278,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA7 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
+  /*Configure GPIO pin : PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -307,21 +313,21 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void ReadMatrixButton_1Row() {
-    static uint8_t X = 0;
-    register int i;
-    for (i = 0; i < 4; i++) {
-        if (HAL_GPIO_ReadPin(L[i].PORT, L[i].PIN)) {
-            ButtonMatrix &= ~(1 << (X * 4 + i));
-        } else {
-            ButtonMatrix |= 1 << (X * 4 + i);
-        }
-    }
-    HAL_GPIO_WritePin(R[X].PORT, R[X].PIN, 1);
-    HAL_GPIO_WritePin(R[(X + 1) % 4].PORT, R[(X + 1) % 4].PIN, 0);
-    X++;
-    X %= 4;
-}
+//void ReadMatrixButton_1Row() {
+//    static uint8_t X = 0;
+//    register int i;
+//    for (i = 0; i < 4; i++) {
+//        if (HAL_GPIO_ReadPin(L[i].PORT, L[i].PIN)) {
+//            ButtonMatrix &= ~(1 << (X * 4 + i));
+//        } else {
+//            ButtonMatrix |= 1 << (X * 4 + i);
+//        }
+//    }
+//    HAL_GPIO_WritePin(R[X].PORT, R[X].PIN, 1);
+//    HAL_GPIO_WritePin(R[(X + 1) % 4].PORT, R[(X + 1) % 4].PIN, 0);
+//    X++;
+//    X %= 4;
+//}
 /* USER CODE END 4 */
 
 /**
