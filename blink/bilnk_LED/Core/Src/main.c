@@ -42,6 +42,15 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+//create structure type
+
+
+struct _GPIOstate{
+	GPIO_PinState Current;
+	GPIO_PinState Last;
+};
+struct _GPIOstate Button1;
+
 
 /* USER CODE END PV */
 
@@ -98,11 +107,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  // Read pin PC13 and save it to Button1
+//	  GPIO_PinState Button1;
+	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
 
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-	  HAL_Delay(500);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-	  HAL_Delay(500);
+	  if(Button1.Last == 0 && Button1.Current == 1){
+		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  }
+	  Button1.Last = Button1.Current;
   }
   /* USER CODE END 3 */
 }
@@ -204,11 +216,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
