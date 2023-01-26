@@ -68,11 +68,14 @@ struct PortPin R[4] = {
 struct PortPin L[4] = {
 
 	{GPIOA,GPIO_PIN_9},
-	{GPIOB,GPIO_PIN_7},
-	{GPIOC,GPIO_PIN_6},
+	{GPIOC,GPIO_PIN_7},
+	{GPIOB,GPIO_PIN_6},
 	{GPIOA,GPIO_PIN_7}
 
 };
+
+
+
 
 uint16_t ButtonMatrix = 0;
 /* USER CODE END PV */
@@ -82,7 +85,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void ReadMatrixButton_1Row();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -140,7 +143,12 @@ int main(void)
 //			  timestamp = HAL_GetTick() + 50;
 //			  Button1.state = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12);
 //			  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
-//
+	  static uint32_t timestamp = 0;
+	  if(HAL_GetTick() >= timestamp){
+		  timestamp = HAL_GetTick() + 100;
+		  ReadMatrixButton_1Row();
+
+	  }
 //		  }
 //	  }
 //	  Button1.Last = Button1.Current;
@@ -299,24 +307,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void ReadMatrixButton_1Row(){
-
-	static uint8_t X = 0;
-	register int i;
-	for (i = 0;i<4;i++){
-		if(HAL_GPIO_ReadPin(L[i].PORT, L[i].PIN) == 1){
-
-			ButtonMatrix &= ~(1<<X+4+i);
-		}
-		else{
-			ButtonMatrix = 1 <<(X+4+i);
-		}
-	}
-	HAL_GPIO_WritePin(R[X].PORT, R[X].PIN, 1);
-	HAL_GPIO_WritePin(R[(X+1)%4].PORT, R[X].PIN, 1);
-	X++;
-	X%=4;
-
+void ReadMatrixButton_1Row() {
+    static uint8_t X = 0;
+    register int i;
+    for (i = 0; i < 4; i++) {
+        if (HAL_GPIO_ReadPin(L[i].PORT, L[i].PIN)) {
+            ButtonMatrix &= ~(1 << (X * 4 + i));
+        } else {
+            ButtonMatrix |= 1 << (X * 4 + i);
+        }
+    }
+    HAL_GPIO_WritePin(R[X].PORT, R[X].PIN, 1);
+    HAL_GPIO_WritePin(R[(X + 1) % 4].PORT, R[(X + 1) % 4].PIN, 0);
+    X++;
+    X %= 4;
 }
 /* USER CODE END 4 */
 
