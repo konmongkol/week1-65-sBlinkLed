@@ -83,7 +83,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -109,10 +108,15 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  // Read pin PC13 and save it to Button1
 //	  GPIO_PinState Button1;
-	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
 
-	  if(Button1.Last == 0 && Button1.Current == 1){
-		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  Button1.Current = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10);
+
+	  static uint32_t timestamp = 0;
+	  if(HAL_GetTick() >= timestamp){
+		  if(Button1.Last == 0 && Button1.Current == 1){
+			  timestamp = HAL_GetTick() + 50;
+			  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
+		  }
 	  }
 	  Button1.Last = Button1.Current;
   }
@@ -216,6 +220,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -228,6 +235,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
